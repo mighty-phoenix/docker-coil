@@ -1,1 +1,3 @@
-export {DockerCoil} from './DockerCoil';
+import DockerCoil from './src/DockerCoil.js';
+
+export {DockerCoil};

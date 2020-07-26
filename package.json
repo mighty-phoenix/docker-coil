@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A package to manage a list of heavy-duty dockers and maintain a communication channel with them.",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
