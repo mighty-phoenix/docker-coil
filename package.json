@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/AakashMallik/DockerCoil#readme",
   "dependencies": {
-    "dockerode": "^3.2.1"
+    "dockerode": "^3.2.1",
+    "kafka-node": "^5.0.0"
   }
 }

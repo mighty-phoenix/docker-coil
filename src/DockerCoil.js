@@ -1,16 +1,55 @@
 import Docker from 'dockerode';
+import { KafkaClient as Client, Producer, ProduceRequest } from 'kafka-node';
 
-// import Coil from './Coil';
+const kafkaHost = 'localhost:9092';
+const topic = "HBOT_COMMAND"
+
+class KafkaWrapper {
+    client = null;
+    producer = null;
+
+    constructor() {
+        this.client = new Client({ kafkaHost });
+        this.producer = new Producer(client);
+    }
+
+    publish = (data) => {
+        this.producer.on(
+            'ready',
+            () => {
+                client.refreshMetadata(
+                    [topic],
+                    (err) => {
+                        if (err) {
+                            throw err;
+                        }
+
+                        console.log(`Sending message to ${topic}: ${data}`);
+                        producer.send(
+                            [{ topic, data }],
+                            (err, result) => {
+                                console.log(err || result);
+                            }
+                        );
+                    }
+                );
+            }
+        );
+    }
+}
 
 class DockerCoil {
     DockerRemote = null;
     CoilList = null;
     length = null;
+    messenger = null;
 
     constructor() {
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
+
+        this.messenger = new KafkaWrapper();
 
         // setup kafka consumer
     }
@@ -47,7 +86,7 @@ class DockerCoil {
                 return container.id;
             }
         ).catch(
-            (err)=> {
+            (err) => {
                 console.log(err);
             }
         )
@@ -66,6 +105,14 @@ class DockerCoil {
     purge = (idList) => {
         // delete all coils whos id don't exist
         // in idList
+    }
+
+    sendMessage = ({id, data}) => {
+        // Prepare a message
+
+        this.messenger.publish(
+            "Hello! Message from Kafka"
+        )
     }
 }
 

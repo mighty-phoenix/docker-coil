@@ -1,0 +1,8 @@
+# base image
+FROM ubuntu
+
+# copy files to container
+COPY . /usr/src/app
+
+# change working directory
+WORKDIR /usr/src/app
