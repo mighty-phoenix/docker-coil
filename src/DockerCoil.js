@@ -1,5 +1,6 @@
 import Docker from 'dockerode';
-import { KafkaClient as Client, Producer, ProduceRequest } from 'kafka-node';
+import kafkaPkgs from 'kafka-node';
+const { KafkaClient: Client, Producer, ProduceRequest } = kafkaPkgs;
 
 const kafkaHost = 'localhost:9092';
 const topic = "HBOT_COMMAND"
@@ -10,14 +11,14 @@ class KafkaWrapper {
 
     constructor() {
         this.client = new Client({ kafkaHost });
-        this.producer = new Producer(client);
+        this.producer = new Producer(this.client);
     }
 
     publish = (data) => {
         this.producer.on(
             'ready',
             () => {
-                client.refreshMetadata(
+                this.client.refreshMetadata(
                     [topic],
                     (err) => {
                         if (err) {
@@ -25,7 +26,7 @@ class KafkaWrapper {
                         }
 
                         console.log(`Sending message to ${topic}: ${data}`);
-                        producer.send(
+                        this.producer.send(
                             [{ topic, data }],
                             (err, result) => {
                                 console.log(err || result);
@@ -107,7 +108,7 @@ class DockerCoil {
         // in idList
     }
 
-    sendMessage = ({id, data}) => {
+    sendMessage = ({ id, data }) => {
         // Prepare a message
 
         this.messenger.publish(
