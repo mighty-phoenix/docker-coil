@@ -9,5 +9,10 @@ const dockerCoil = new DockerCoil();
 //     }
 // );
 
-// TEST 2: CHECK if docker recieves messages
-dockerCoil.sendMessage("Hello");
+// TEST 2: Check if recieve is working
+dockerCoil.onRecieve((message)=>{
+    console.log(message);
+});
+
+// TEST 3: CHECK if docker recieves messages
+dockerCoil.send("Hello");

@@ -1,13 +1,32 @@
-from kafka import KafkaConsumer
+import os
+
+from kafka import (KafkaConsumer, KafkaProducer)
+
+outStream = os.popen('head -1 /proc/self/cgroup|cut -d/ -f3')
+
+container_id = outStream.read()
+kafkaBrokers = ['localhost:9092']
+
+producer = KafkaProducer(bootstrap_servers=kafkaBrokers)
 
 consumer = KafkaConsumer(
-    'HBOT_COMMAND',
-    bootstrap_servers=['localhost:9092'],
+    'HBOT',
+    bootstrap_servers=kafkaBrokers,
     auto_offset_reset='earliest',
     enable_auto_commit=True,
     group_id='DOCKER_POOL_1'
 )
 
 for message in consumer:
-    message = message.value
-    print('Got message {}'.format(message))
+    
+    # Show msg from lutra backend
+    print(format(message))
+
+    # send msg to lutra backend
+    producer.send(
+        "LUTRA_BACKEND",
+        value=b'Hello from BOT',
+        partition=0
+    )
+
+    print("Container ID: {}".format(container_id))

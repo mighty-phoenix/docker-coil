@@ -1,41 +1,65 @@
 import Docker from 'dockerode';
 import kafkaPkgs from 'kafka-node';
-const { KafkaClient: Client, Producer, ProduceRequest } = kafkaPkgs;
+const { KafkaClient: Client, Producer, Consumer } = kafkaPkgs;
 
-const kafkaHost = 'localhost:9092';
-const topic = "HBOT_COMMAND"
+const kafkaBroker = 'localhost:9092';
 
 class KafkaWrapper {
     client = null;
     producer = null;
 
     constructor() {
-        this.client = new Client({ kafkaHost });
+        this.client = new Client({ kafkaBroker });
         this.producer = new Producer(this.client);
+        this.consumer = new Consumer(
+            this.client,
+            [
+                {
+                    topic: "LUTRA_BACKEND",
+                    partitions: 0
+                }
+            ]
+        );
+
+        // this.client.createTopics(
+        //     [
+        //         {
+        //             topic: 'HBOT',
+        //             partitions: 0
+        //         },
+        //         (err, res) => {
+        //             console.log(err || res);
+        //         }
+        //     ]
+        // );
     }
 
     publish = (data) => {
+        const serializedData = JSON.stringify(data);
+
         this.producer.on(
             'ready',
             () => {
-                this.client.refreshMetadata(
-                    [topic],
-                    (err) => {
-                        if (err) {
-                            throw err;
-                        }
+                console.log(`HBOT - ${serializedData}`);
+                const payload = [
+                    { topic: "HBOT", messages: serializedData }
+                ];
 
-                        console.log(`Sending message to ${topic}: ${data}`);
-                        this.producer.send(
-                            [{ topic, data }],
-                            (err, result) => {
-                                console.log(err || result);
-                            }
-                        );
+                this.producer.send(
+                    payload,
+                    (err, result) => {
+                        console.log(err || result);
                     }
                 );
             }
         );
+    }
+
+    onRecieve = (cb) => {
+        this.consumer.on(
+            "message",
+            cb
+        )
     }
 }
 
@@ -51,11 +75,9 @@ class DockerCoil {
         this.length = Object.keys(this.CoilList);
 
         this.messenger = new KafkaWrapper();
-
-        // setup kafka consumer
     }
 
-    addToCoilList = (container) => {
+    _addToCoilList = (container) => {
         this.CoilList = {
             ...this.CoilList,
             [container.id]: container
@@ -63,16 +85,12 @@ class DockerCoil {
         this.length = Object.keys(this.CoilList);
     }
 
-    removeFromCoilList = (id) => {
+    _removeFromCoilList = (id) => {
         delete this.CoilList[id];
         this.length = Object.keys(this.CoilList);
     }
 
     start = () => {
-        // Start container returns promise that gives id
-        // append key to d_list
-        // check if key exists
-
         return this.DockerRemote.createContainer(
             {
                 Image: 'hello-world',
@@ -83,7 +101,7 @@ class DockerCoil {
         ).then(
             (container) => {
                 container.start();
-                this.addToCoilList(container);
+                this._addToCoilList(container);
                 return container.id;
             }
         ).catch(
@@ -99,21 +117,45 @@ class DockerCoil {
         // check if key exists
     }
 
-    getCoil = (id) => {
+    getInstance = (id) => {
         return this.CoilList[id];
     }
 
-    purge = (idList) => {
+    purgeIdle = (idList) => {
         // delete all coils whos id don't exist
         // in idList
     }
 
-    sendMessage = ({ id, data }) => {
-        // Prepare a message
-
+    send = ({ id, data }) => {
+        // if (id in this.CoilList) {
+        //     this.messenger.publish(
+        //         {
+        //             id: 'abc',
+        //             command: "START_TRADE",
+        //             config: {
+        //                 key_1: "exchange1",
+        //                 key_2: "exchange2"
+        //             }
+        //         }
+        //     );
+        // }
+        // else {
+        //     console.log(`${id} absent in list of containers`);
+        // }
         this.messenger.publish(
-            "Hello! Message from Kafka"
-        )
+            {
+                id: 'abc',
+                command: "START_TRADE",
+                config: {
+                    key_1: "exchange1",
+                    key_2: "exchange2"
+                }
+            }
+        );
+    }
+
+    onRecieve = (cb) => {
+        this.messenger.onRecieve(cb);
     }
 }
 
