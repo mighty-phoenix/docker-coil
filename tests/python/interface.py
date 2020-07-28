@@ -14,7 +14,7 @@ consumer = KafkaConsumer(
     bootstrap_servers=kafkaBrokers,
     auto_offset_reset='earliest',
     enable_auto_commit=True,
-    group_id='DOCKER_POOL_1'
+    group_id=container_id
 )
 
 for message in consumer:
