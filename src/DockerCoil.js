@@ -1,67 +1,6 @@
 import Docker from 'dockerode';
-import kafkaPkgs from 'kafka-node';
-const { KafkaClient: Client, Producer, Consumer } = kafkaPkgs;
 
-const kafkaBroker = 'localhost:9092';
-
-class KafkaWrapper {
-    client = null;
-    producer = null;
-
-    constructor() {
-        this.client = new Client({ kafkaBroker });
-        this.producer = new Producer(this.client);
-        this.consumer = new Consumer(
-            this.client,
-            [
-                {
-                    topic: "LUTRA_BACKEND",
-                    partitions: 0
-                }
-            ]
-        );
-
-        // this.client.createTopics(
-        //     [
-        //         {
-        //             topic: 'HBOT',
-        //             partitions: 0
-        //         },
-        //         (err, res) => {
-        //             console.log(err || res);
-        //         }
-        //     ]
-        // );
-    }
-
-    publish = (data) => {
-        const serializedData = JSON.stringify(data);
-
-        this.producer.on(
-            'ready',
-            () => {
-                console.log(`HBOT - ${serializedData}`);
-                const payload = [
-                    { topic: "HBOT", messages: serializedData }
-                ];
-
-                this.producer.send(
-                    payload,
-                    (err, result) => {
-                        console.log(err || result);
-                    }
-                );
-            }
-        );
-    }
-
-    onRecieve = (cb) => {
-        this.consumer.on(
-            "message",
-            cb
-        )
-    }
-}
+import DockerMessenger from './DockerMessenger.js';
 
 class DockerCoil {
     DockerRemote = null;
@@ -69,12 +8,14 @@ class DockerCoil {
     length = null;
     messenger = null;
 
-    constructor() {
+    constructor({ kafkaBroker }) {
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
 
-        this.messenger = new KafkaWrapper();
+        this.messenger = new DockerMessenger({
+            kafkaBroker
+        });
     }
 
     _addToCoilList = (container) => {
@@ -93,28 +34,53 @@ class DockerCoil {
     start = () => {
         return this.DockerRemote.createContainer(
             {
-                Image: 'hello-world',
+                Image: 'hbot',
                 AttachStdin: false,
-                AttachStdout: true,
+                AttachStdout: false,
                 AttachStderr: true,
-            }
-        ).then(
-            (container) => {
-                container.start();
-                this._addToCoilList(container);
-                return container.id;
-            }
-        ).catch(
-            (err) => {
-                console.log(err);
+                HostConfig: {
+                    NetworkMode: "host"
+                }
             }
         )
+            .then(
+                container => {
+                    container.start();
+                    this._addToCoilList(container);
+                    return container.id;
+                }
+            )
+            .catch(
+                err => {
+                    console.log(err);
+                }
+            );
     }
 
-    stop = () => {
-        // stop container
-        // remove key from d_list
-        // check if key exists
+    stop = ({ id }) => {
+        console.log(`${id} Request for stopping!`);
+
+        if (id in this.CoilList) {
+            return this.CoilList[id].stop()
+                .then(
+                    container => {
+                        return container.remove();
+                    }
+                )
+                .then(
+                    () => {
+                        console.log(`${id} removed successfully`);
+                    }
+                )
+                .catch(
+                    err => {
+                        console.log(err);
+                    }
+                );
+        }
+        else {
+            console.log(`${id} not created!`);
+        }
     }
 
     getInstance = (id) => {
@@ -127,31 +93,18 @@ class DockerCoil {
     }
 
     send = ({ id, data }) => {
-        // if (id in this.CoilList) {
-        //     this.messenger.publish(
-        //         {
-        //             id: 'abc',
-        //             command: "START_TRADE",
-        //             config: {
-        //                 key_1: "exchange1",
-        //                 key_2: "exchange2"
-        //             }
-        //         }
-        //     );
-        // }
-        // else {
-        //     console.log(`${id} absent in list of containers`);
-        // }
-        this.messenger.publish(
-            {
-                id: 'abc',
-                command: "START_TRADE",
-                config: {
-                    key_1: "exchange1",
-                    key_2: "exchange2"
+        console.log(`{Send request for ${id}}`);
+        if (id in this.CoilList) {
+            this.messenger.publish(
+                {
+                    id,
+                    data
                 }
-            }
-        );
+            );
+        }
+        else {
+            console.log(`${id} not created!`);
+        }
     }
 
     onRecieve = (cb) => {
