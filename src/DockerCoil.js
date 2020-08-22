@@ -94,7 +94,7 @@ class DockerCoil {
 
     send = ({ id, data }) => {
         console.log(`{Send request for ${id}}`);
-        if (id in this.CoilList) {
+        if (true || id in this.CoilList) {
             this.messenger.publish(
                 {
                     id,
