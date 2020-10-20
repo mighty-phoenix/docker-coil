@@ -119,6 +119,54 @@ dockerCoil.send({
 
 */
 
+/*
+// Various tests for the import command.
+
+// TEST A: Import strategy using args.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"import",
+        config: {
+            msg: "Some Random keys"
+        }
+    },
+    args: {
+        "template_version": 4,
+        "strategy": "arbitrage",
+        "primary_market": "binance",
+        "secondary_market": "bittrex",
+        "primary_market_trading_pair": "BTC-USDT",
+        "secondary_market_trading_pair": "UBT-BTC",
+        "min_profitability": 0.3,
+        "secondary_to_primary_base_conversion_rate": 1.0,
+        "secondary_to_primary_quote_conversion_rate": 1.0
+    }
+});
+
+// TEST B: Check after performing TEST A if the given bot configuration is applied.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"config",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+
+// TEST C: Import without any configuration and expect the message "No coniguration found! Please retry with a configuration."
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"import  ",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+*/
+
 dockerCoil.send({
     id: "apha1", 
     data:{

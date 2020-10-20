@@ -67,6 +67,15 @@ class DockerMessenger {
                 }
             }
         }
+        else if(data.command.trim() === "import") {
+            if(args !== undefined && Object.keys(args).length === 0) {
+                throw "Invalid argument list!\nNo argument list found.";   
+            } else {
+                var args_string = JSON.stringify(args);
+                if(args !== undefined)
+                    data.command = `${data.command} ${args_string}`;
+            }
+        }
 
         const serializedData = JSON.stringify({
             id,
