@@ -167,6 +167,76 @@ dockerCoil.send({
 });
 */
 
+/*
+// Various tests for the start command.
+
+// TEST A: Set paper_trade config to True.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"paper_trade",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+
+// TEST B: Import a trading strategy.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"import",
+        config: {
+            msg: "Some Random keys"
+        }
+    },
+    args: {
+        "template_version": 4,
+        "strategy": "arbitrage",
+        "primary_market": "binance",
+        "secondary_market": "bittrex",
+        "primary_market_trading_pair": "BTC-USDT",
+        "secondary_market_trading_pair": "UBT-BTC",
+        "min_profitability": 0.3,
+        "secondary_to_primary_base_conversion_rate": 1.0,
+        "secondary_to_primary_quote_conversion_rate": 1.0
+    }
+});
+
+// TEST C: Check if paper_trade_enabled is set to True in config.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"config",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+
+// TEST D: Start the bot.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"start",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+
+// TEST E: Stop the bot.
+dockerCoil.send({
+    id: "apha1", 
+    data:{
+        command:"stop",
+        config: {
+            msg: "Some Random keys"
+        }
+    }
+});
+*/
+
 dockerCoil.send({
     id: "apha1", 
     data:{
