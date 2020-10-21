@@ -132,7 +132,6 @@ dockerCoil.send({
         }
     },
     args: {
-        "template_version": 4,
         "strategy": "arbitrage",
         "primary_market": "binance",
         "secondary_market": "bittrex",
@@ -168,7 +167,7 @@ dockerCoil.send({
 */
 
 /*
-// Various tests for the start command.
+// Various tests for the start and the stop command.
 
 // TEST A: Set paper_trade config to True.
 dockerCoil.send({
@@ -191,7 +190,6 @@ dockerCoil.send({
         }
     },
     args: {
-        "template_version": 4,
         "strategy": "arbitrage",
         "primary_market": "binance",
         "secondary_market": "bittrex",
