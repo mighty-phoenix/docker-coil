@@ -23,40 +23,40 @@ class DockerMessenger {
     }
 
     publish = ({ id, data, args }) => {
-        if(data.command.trim() === "balance") {
-            if(args !== undefined) {
-                if(args.option === undefined)
+        if (data.command.trim() === "balance") {
+            if (args !== undefined) {
+                if (args.option === undefined)
                     throw "Invalid argument list!\nNo option found.";
 
                 var option = args.option.trim();
-                
-                if(option === "limit") {
-                    if(Object.values(args).length !== 1) {
-                        if(args.exchange === undefined ) {
+
+                if (option === "limit") {
+                    if (Object.values(args).length !== 1) {
+                        if (args.exchange === undefined) {
                             throw "exchange is not defined in the argument list.\nKindly define the exchange in the argument list and retry.";
                         }
 
-                        if(args.asset === undefined ) {
+                        if (args.asset === undefined) {
                             throw "asset is not defined in the argument list.\nKindly define the asset in the argument list and retry.";
                         }
 
-                        if(args.amount === undefined ) {
+                        if (args.amount === undefined) {
                             throw "amount is not defined in the argument list.\nKindly define the amount in the argument list and retry.";
                         }
 
                         data.command = `${data.command} ${args.option} ${args.exchange} ${args.asset} ${args.amount}`;
                     } else {
                         data.command = `${data.command} ${args.option}`;
-                    }    
+                    }
                 }
 
-                if(option === "paper") {
-                    if(Object.values(args).length !== 1) {
-                        if(args.asset === undefined ) {
+                if (option === "paper") {
+                    if (Object.values(args).length !== 1) {
+                        if (args.asset === undefined) {
                             throw "asset is not defined in the argument list.\nKindly define the asset in the argument list and retry.";
                         }
 
-                        if(args.amount === undefined ) {
+                        if (args.amount === undefined) {
                             throw "amount is not defined in the argument list.\nKindly define the amount in the argument list and retry.";
                         }
 
@@ -67,12 +67,12 @@ class DockerMessenger {
                 }
             }
         }
-        else if(data.command.trim() === "import") {
-            if(args !== undefined && Object.keys(args).length === 0) {
-                throw "Invalid argument list!\nNo argument list found.";   
+        else if (data.command.trim() === "import") {
+            if (args !== undefined && Object.keys(args).length === 0) {
+                throw "Invalid argument list!\nNo argument list found.";
             } else {
                 var args_string = JSON.stringify(args);
-                if(args !== undefined)
+                if (args !== undefined)
                     data.command = `${data.command} ${args_string}`;
             }
         }
@@ -82,24 +82,20 @@ class DockerMessenger {
             data
         });
 
-        this.producer.on(
-            'ready',
-            () => {
-                console.log("Sending Payload!");
-                console.log(serializedData);
+        console.log("Sending Payload!");
+        console.log(serializedData);
 
-                const payload = [
-                    { topic: "HBOT", messages: serializedData }
-                ];
+        const payload = [
+            { topic: "HBOT", messages: serializedData }
+        ];
 
-                this.producer.send(
-                    payload,
-                    (err, result) => {
-                        console.log(err || result);
-                    }
-                );
+        this.producer.send(
+            payload,
+            (err, result) => {
+                console.log(err || result);
             }
         );
+
     }
 
     onRecieve = (cb) => {
