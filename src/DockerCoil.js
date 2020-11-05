@@ -7,14 +7,39 @@ class DockerCoil {
     CoilList = null;
     length = null;
     messenger = null;
+    msgQueue = null;
+    globalListener = null;
+    dequeueMsgQueue = null;
+
 
     constructor({ kafkaBroker }) {
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
-
         this.messenger = new DockerMessenger({
             kafkaBroker
+        });
+        this.msgQueue = [];
+        this.globalListener = [];
+        this.dequeueMsgQueue = (id) => {
+            for (let i = 0; i < this.msgQueue.length; i++) {
+                if (this.msgQueue[i].id === id) {
+                    this.send({ id: this.msgQueue[i].id, data: { command: this.msgQueue[i].command } });
+                    console.log("Sent command!");
+                    this.msgQueue.splice(i, 1);
+                    i--;
+                }
+            }
+        };
+        this.globalListener.push = async (listenerDict) => {
+            await Array.prototype.push.apply(this.globalListener, listenerDict);
+            if (listenerDict.type === "READY") {
+                this.dequeueMsgQueue(listenerDict.containerId);
+            }
+        };
+        this.messenger.onRecieve((message) => {
+            this.globalListener.push(JSON.parse(message.value));
+            console.log(message.value);
         });
     }
 
@@ -34,9 +59,12 @@ class DockerCoil {
     start = () => {
         return this.DockerRemote.createContainer(
             {
-                Image: 'hbot',
+                Image: 'hummingbot:latest',
+                Env: [
+                    'PLATFORM=CONTAINER'
+                ],
                 AttachStdin: false,
-                AttachStdout: false,
+                AttachStdout: true,
                 AttachStderr: true,
                 HostConfig: {
                     NetworkMode: "host"
@@ -94,7 +122,9 @@ class DockerCoil {
 
     send = ({ id, data, args }) => {
         console.log(`{Send request for ${id}}`);
-        if (true || id in this.CoilList) {
+        if (id in this.CoilList || id === "apha1") {
+            console.log("SENDING!!!");
+            console.log(data);
             this.messenger.publish(
                 {
                     id,
@@ -108,8 +138,14 @@ class DockerCoil {
         }
     }
 
-    onRecieve = (cb) => {
-        this.messenger.onRecieve(cb);
+    execute = async ({ id, command }) => {
+        if (id === undefined || id === null || id.trim() === "" || !(id in this.CoilList)) {
+            id = await this.start();
+            this.msgQueue.push({ 'id': id, 'command': command });
+        } else if (id in this.CoilList) {
+            this.send({ 'id': id, 'data': { 'command': command } });
+        }
+        return id;
     }
 }
 
