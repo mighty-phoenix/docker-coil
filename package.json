@@ -9,20 +9,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AakashMallik/DockerCoil.git"
+    "url": "git+https://github.com/lutra-labs/docker-coil.git"
   },
   "keywords": [
     "Docker",
     "JavaScript",
     "NodeJS",
-    "Lutra"
+    "Lutra",
+    "dockerrode"
   ],
-  "author": "AakashMallik",
+  "author": "Aakash Mallik and Rakshit Kumar",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/AakashMallik/DockerCoil/issues"
+    "url": "https://github.com/lutra-labs/docker-coil/issues"
   },
-  "homepage": "https://github.com/AakashMallik/DockerCoil#readme",
+  "homepage": "https://github.com/lutra-labs/docker-coil#readme",
   "dependencies": {
     "dockerode": "^3.2.1",
     "kafka-node": "^5.0.0"
