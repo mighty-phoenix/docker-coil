@@ -1,3 +1,3 @@
-import DockerCoil from './src/DockerCoil.js';
+const DockerCoil = require('./src/DockerCoil.js');
 
-export {DockerCoil};
+module.exports = DockerCoil;

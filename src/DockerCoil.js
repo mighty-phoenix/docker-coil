@@ -1,6 +1,6 @@
-import Docker from 'dockerode';
+const Docker = require('dockerode');
 
-import DockerMessenger from './DockerMessenger.js';
+const DockerMessenger = require('./DockerMessenger.js');
 
 class DockerCoil {
     DockerRemote = null;
@@ -149,4 +149,4 @@ class DockerCoil {
     }
 }
 
-export default DockerCoil;
+module.exports = DockerCoil;

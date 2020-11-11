@@ -1,4 +1,4 @@
-import kafkaPkgs from 'kafka-node';
+const kafkaPkgs = require('kafka-node');
 
 const { KafkaClient: Client, Producer, Consumer } = kafkaPkgs;
 
@@ -106,4 +106,4 @@ class DockerMessenger {
     }
 }
 
-export default DockerMessenger;
+module.exports = DockerMessenger;

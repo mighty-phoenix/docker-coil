@@ -1,4 +1,4 @@
-import { DockerCoil } from '../index.js';
+const DockerCoil = require('../index.js');
 
 const dockerCoil = new DockerCoil({
     kafkaBroker: 'localhost:9092'
