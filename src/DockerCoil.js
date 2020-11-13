@@ -67,7 +67,6 @@ class DockerCoil {
                 Image: 'hummingbot:latest',
                 Env: [
                     'PLATFORM=CONTAINER',
-                    'hummingbot_keys={\"binance_api_key\":\"2ejtm8efrY0Af4lW96TYi8zVgWiW7nj6McT6mgxOopBGMnrPq5RhTUkntZbJX3u6\",\"binance_api_secret\":\"Jb3aySG0rdz9JR6iALlGidbXuHOfEUZI0vs2LR5a5XSnJq2sYY56aRiz1TCwETwM\"}',
                     'PAPER_TRADE=True'
                 ],
                 AttachStdin: false,
