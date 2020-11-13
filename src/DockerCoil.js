@@ -12,7 +12,7 @@ class DockerCoil {
     dequeueMsgQueue = null;
 
 
-    constructor({ kafkaBroker }) {
+    constructor({ kafkaBroker, updateBalance, getUserByContainerId }) {
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
@@ -35,6 +35,11 @@ class DockerCoil {
             await Array.prototype.push.apply(this.globalListener, listenerDict);
             if (listenerDict.type === "READY") {
                 this.dequeueMsgQueue(listenerDict.containerId);
+            }
+            switch(listenerDict.type) {
+                case 'BALANCE':
+                    const containerId = await getUserByContainerId(listenerDict.containerId);
+                    updateBalance(containerId, JSON.stringify(listenerDict.balance));
             }
         };
         this.messenger.onRecieve((message) => {
@@ -61,7 +66,9 @@ class DockerCoil {
             {
                 Image: 'hummingbot:latest',
                 Env: [
-                    'PLATFORM=CONTAINER'
+                    'PLATFORM=CONTAINER',
+                    'hummingbot_keys={\"binance_api_key\":\"2ejtm8efrY0Af4lW96TYi8zVgWiW7nj6McT6mgxOopBGMnrPq5RhTUkntZbJX3u6\",\"binance_api_secret\":\"Jb3aySG0rdz9JR6iALlGidbXuHOfEUZI0vs2LR5a5XSnJq2sYY56aRiz1TCwETwM\"}',
+                    'PAPER_TRADE=True'
                 ],
                 AttachStdin: false,
                 AttachStdout: true,
@@ -142,10 +149,16 @@ class DockerCoil {
         if (id === undefined || id === null || id.trim() === "" || !(id in this.CoilList)) {
             id = await this.start();
             this.msgQueue.push({ 'id': id, 'command': command });
+            return id;
         } else if (id in this.CoilList) {
-            this.send({ 'id': id, 'data': { 'command': command } });
+            if(this.msgQueue.length !== 0) {
+                this.msgQueue.push({ 'id': id, 'command': command });
+            } else {
+                this.send({ 'id': id, 'data': { 'command': command } });
+            }
+            return "Already exists.";
         }
-        return id;
+        
     }
 }
 
