@@ -1,6 +1,6 @@
 {
   "name": "dockercoil",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A package to manage a list of heavy-duty dockers and maintain a communication channel with them.",
   "main": "index.js",
   "scripts": {
