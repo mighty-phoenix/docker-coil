@@ -12,11 +12,7 @@ class DockerCoil {
     dequeueMsgQueue = null;
 
 
-<<<<<<< HEAD
     constructor({ kafkaBroker, updateBalance, getUserByContainerId, updateExchanges }) {
-=======
-    constructor({ kafkaBroker, updateBalance, getUserByContainerId }) {
->>>>>>> 3ef649426ec5c56fc070c75055761949ebdd79b5
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
@@ -40,7 +36,6 @@ class DockerCoil {
             if (listenerDict.type === "READY") {
                 this.dequeueMsgQueue(listenerDict.containerId);
             }
-<<<<<<< HEAD
             switch (listenerDict.type) {
                 case 'BALANCE':
                     const containerIdBalance = await getUserByContainerId(listenerDict.containerId);
@@ -50,12 +45,6 @@ class DockerCoil {
                     const containerIdConnect = await getUserByContainerId(listenerDict.containerId);
                     updateExchanges(containerIdConnect, JSON.stringify(listenerDict.exchanges));
                     break;
-=======
-            switch(listenerDict.type) {
-                case 'BALANCE':
-                    const containerId = await getUserByContainerId(listenerDict.containerId);
-                    updateBalance(containerId, JSON.stringify(listenerDict.balance));
->>>>>>> 3ef649426ec5c56fc070c75055761949ebdd79b5
             }
         };
         this.messenger.onRecieve((message) => {
@@ -197,22 +186,13 @@ class DockerCoil {
             this.msgQueue.push({ 'id': id, 'command': command });
             return id;
         } else if (id in this.CoilList) {
-<<<<<<< HEAD
             if (this.msgQueue.length !== 0) {
-=======
-            if(this.msgQueue.length !== 0) {
->>>>>>> 3ef649426ec5c56fc070c75055761949ebdd79b5
                 this.msgQueue.push({ 'id': id, 'command': command });
             } else {
                 this.send({ 'id': id, 'data': { 'command': command } });
             }
             return "Already exists.";
         }
-<<<<<<< HEAD
-
-=======
-
->>>>>>> 3ef649426ec5c56fc070c75055761949ebdd79b5
     }
 }
 
