@@ -12,7 +12,7 @@ class DockerCoil {
     dequeueMsgQueue = null;
 
 
-    constructor({ kafkaBroker, updateBalance, getUserByContainerId }) {
+    constructor({ kafkaBroker, updateBalance, getUserByContainerId, updateExchanges }) {
         this.DockerRemote = new Docker({ socketPath: '/var/run/docker.sock' });
         this.CoilList = {};
         this.length = Object.keys(this.CoilList);
@@ -36,10 +36,15 @@ class DockerCoil {
             if (listenerDict.type === "READY") {
                 this.dequeueMsgQueue(listenerDict.containerId);
             }
-            switch(listenerDict.type) {
+            switch (listenerDict.type) {
                 case 'BALANCE':
-                    const containerId = await getUserByContainerId(listenerDict.containerId);
-                    updateBalance(containerId, JSON.stringify(listenerDict.balance));
+                    const containerIdBalance = await getUserByContainerId(listenerDict.containerId);
+                    updateBalance(containerIdBalance, JSON.stringify(listenerDict.balance));
+                    break;
+                case 'CONNECT':
+                    const containerIdConnect = await getUserByContainerId(listenerDict.containerId);
+                    updateExchanges(containerIdConnect, JSON.stringify(listenerDict.exchanges));
+                    break;
             }
         };
         this.messenger.onRecieve((message) => {
@@ -61,35 +66,65 @@ class DockerCoil {
         this.length = Object.keys(this.CoilList);
     }
 
-    start = () => {
-        return this.DockerRemote.createContainer(
-            {
-                Image: 'hummingbot:latest',
-                Env: [
-                    'PLATFORM=CONTAINER',
-                    'hummingbot_keys={\"binance_api_key\":\"2ejtm8efrY0Af4lW96TYi8zVgWiW7nj6McT6mgxOopBGMnrPq5RhTUkntZbJX3u6\",\"binance_api_secret\":\"Jb3aySG0rdz9JR6iALlGidbXuHOfEUZI0vs2LR5a5XSnJq2sYY56aRiz1TCwETwM\"}',
-                    'PAPER_TRADE=True'
-                ],
-                AttachStdin: false,
-                AttachStdout: true,
-                AttachStderr: true,
-                HostConfig: {
-                    NetworkMode: "host"
-                }
-            }
-        )
-            .then(
-                container => {
-                    container.start();
-                    this._addToCoilList(container);
-                    return container.id;
+    start = (apiDetails) => {
+        if (apiDetails)
+            return this.DockerRemote.createContainer(
+                {
+                    Image: 'hummingbot:latest',
+                    Env: [
+                        'PLATFORM=CONTAINER',
+                        'PAPER_TRADE=True',
+                        'hummingbot_keys=' + apiDetails
+                    ],
+                    AttachStdin: false,
+                    AttachStdout: true,
+                    AttachStderr: true,
+                    HostConfig: {
+                        NetworkMode: "host"
+                    }
                 }
             )
-            .catch(
-                err => {
-                    console.log(err);
+                .then(
+                    container => {
+                        container.start();
+                        this._addToCoilList(container);
+                        return container.id;
+                    }
+                )
+                .catch(
+                    err => {
+                        console.log(err);
+                    }
+                );
+        else
+            return this.DockerRemote.createContainer(
+                {
+                    Image: 'hummingbot:latest',
+                    Env: [
+                        'PLATFORM=CONTAINER',
+                        'PAPER_TRADE=True',
+                        'hummingbot_keys={}'
+                    ],
+                    AttachStdin: false,
+                    AttachStdout: true,
+                    AttachStderr: true,
+                    HostConfig: {
+                        NetworkMode: "host"
+                    }
                 }
-            );
+            )
+                .then(
+                    container => {
+                        container.start();
+                        this._addToCoilList(container);
+                        return container.id;
+                    }
+                )
+                .catch(
+                    err => {
+                        console.log(err);
+                    }
+                );
     }
 
     stop = ({ id }) => {
@@ -145,20 +180,20 @@ class DockerCoil {
         }
     }
 
-    execute = async ({ id, command }) => {
+    execute = async ({ id, command, apiDetails }) => {
         if (id === undefined || id === null || id.trim() === "" || !(id in this.CoilList)) {
-            id = await this.start();
+            id = await this.start(apiDetails);
             this.msgQueue.push({ 'id': id, 'command': command });
             return id;
         } else if (id in this.CoilList) {
-            if(this.msgQueue.length !== 0) {
+            if (this.msgQueue.length !== 0) {
                 this.msgQueue.push({ 'id': id, 'command': command });
             } else {
                 this.send({ 'id': id, 'data': { 'command': command } });
             }
             return "Already exists.";
         }
-        
+
     }
 }
 
