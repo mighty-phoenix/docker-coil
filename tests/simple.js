@@ -238,7 +238,7 @@ dockerCoil.send({
 dockerCoil.send({
     id: "apha1", 
     data:{
-        command:"connect",
+        command:"balance",
         config: {
             msg: "Some Random keys"
         }
